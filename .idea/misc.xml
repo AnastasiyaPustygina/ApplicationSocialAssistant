@@ -14,6 +14,8 @@
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/drawable/circle_org_ava.xml" value="0.1" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/drawable/first_ava.xml" value="0.1135" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/drawable/for_ed_text.xml" value="0.1595" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/drawable/ic_baseline_clear_24.xml" value="0.1" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/drawable/ic_baseline_wifi_off_24.xml" value="0.124" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.1" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/drawable/logo.xml" value="0.1" />
@@ -24,19 +26,21 @@
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/drawable/while_loading.xml" value="0.12" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/activity_main.xml" value="0.14" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/behavior_layout.xml" value="0.12" />
-        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/chat_fragment.xml" value="0.14" />
-        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/favourites_fragment.xml" value="0.18072916666666666" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/chat_fragment.xml" value="0.1" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/favourites_fragment.xml" value="0.1" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/for_spinner.xml" value="0.22" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/fragment_map.xml" value="0.16" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/full_info_fragment.xml" value="0.18" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/list_fragment.xml" value="0.13" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/list_of_chats_fragment.xml" value="0.15" />
-        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/main_fragment.xml" value="0.16" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/main_fragment.xml" value="0.1" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/msg_my.xml" value="0.18" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/msg_other.xml" value="0.1" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/no_internet_connection.xml" value="0.16" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/no_internet_connection_fragment.xml" value="0.18" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/reg_fragment.xml" value="0.1" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/short_description.xml" value="0.2" />
-        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/sign_in_fragment.xml" value="0.18072916666666666" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/sign_in_fragment.xml" value="0.1" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/small_chat_window.xml" value="0.25" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/layout/start_fragment.xml" value="0.16" />
         <entry key="..\:/Users/user/AndroidStudioProjects/MainProject/app/src/main/res/mipmap-anydpi-v26/ic_banner.xml" value="0.106" />

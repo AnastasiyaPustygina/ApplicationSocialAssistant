@@ -1,10 +1,11 @@
 package com.example.mainproject.fragment;
 
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.mainproject.OpenHelper;
@@ -22,7 +24,6 @@ import com.example.android.multidex.mainproject.R;
 import com.example.mainproject.domain.Person;
 import com.example.mainproject.rest.AppApiVolley;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,7 +34,6 @@ public class RegFragment extends Fragment {
     private String data;
     private String name;
     private int age;
-
     private String dateOfBirth;
     private String city;
     private String password1;
@@ -43,30 +43,27 @@ public class RegFragment extends Fragment {
     private EditText edTelOrEmail;
     private AppCompatButton bt_reg_fr_reg;
     private TextView checking, tv_data;
-
+    private final String IMAGE_URL = "https://firebasestorage.googleapis.com/v0/b/social-assistant-7a25d.appspot.com/o/images%2FavaForProject.jpg?alt=media&token=e0821c60-2fc5-4d68-92fa-2538d3baca1a";
 
 
 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.reg_fragment, container, false);
-    }
+        View view = inflater.inflate(R.layout.reg_fragment, container, false);
 
-    @Override
-    public void onStart() {
-        super.onStart();
 
-        edTelOrEmail = getActivity().findViewById(R.id.ed_reg_data);
-        checking = getActivity().findViewById(R.id.checking);
-        tv_data = getActivity().findViewById(R.id.tv_reg_data);
-        EditText edName = getActivity().findViewById(R.id.ed_reg_name);
-        EditText edAge = getActivity().findViewById(R.id.ed_reg_age);
-        bt_reg_fr_reg = getActivity().findViewById(R.id.bt_reg_fr_reg);
-        EditText edBateOfBirth = getActivity().findViewById(R.id.ed_reg_dateOfBirth);
-        EditText edCity = getActivity().findViewById(R.id.ed_reg_city);
-        EditText edPass1 = getActivity().findViewById(R.id.ed_reg_pass1);
-        EditText edPass2 = getActivity().findViewById(R.id.ed_reg_pass2);
-        btOfTel = (getActivity().findViewById(R.id.bt_reg_telephone));
-        btOfEmail = (getActivity().findViewById(R.id.bt_reg_email));
+        edTelOrEmail = view.findViewById(R.id.ed_reg_data);
+        checking = view.findViewById(R.id.checking);
+        tv_data = view.findViewById(R.id.tv_reg_data);
+        EditText edName = view.findViewById(R.id.ed_reg_name);
+        EditText edAge = view.findViewById(R.id.ed_reg_age);
+        bt_reg_fr_reg = view.findViewById(R.id.bt_reg_fr_reg);
+        EditText edBateOfBirth = view.findViewById(R.id.ed_reg_dateOfBirth);
+        EditText edCity = view.findViewById(R.id.ed_reg_city);
+        EditText edPass1 = view.findViewById(R.id.ed_reg_pass1);
+        EditText edPass2 = view.findViewById(R.id.ed_reg_pass2);
+        btOfTel = view.findViewById(R.id.bt_reg_telephone);
+        btOfEmail = view.findViewById(R.id.bt_reg_email);
+
         btOfTel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -105,7 +102,7 @@ public class RegFragment extends Fragment {
                 }
                 data = edTelOrEmail.getText().toString();
                 OpenHelper openHelper = new OpenHelper(
-                        getContext(), "OpenHelder", null, OpenHelper.VERSION);
+                        getContext(), "OpenHelper", null, OpenHelper.VERSION);
                 if(openHelper.findAllName().contains(name)) {
                     check = -1;
                     checking.setText("Такий логин уже существует");
@@ -123,26 +120,20 @@ public class RegFragment extends Fragment {
                         || password2.isEmpty()) {
                     checking.setText("Не все поля заполнены");
                 }
-                else if (name.contains("!") || name.contains("#") || name.contains("+") ||
-                        name.contains("=") || name.contains("'")|| name.contains(",")
-                        || age == 0
-                        || data.contains("!") || data.contains("#") || data.contains("+") ||
-                        data.contains("=") || data.contains("'")|| data.contains(",")
-                        || dateOfBirth.contains("!") || dateOfBirth.contains("#") ||
-                        dateOfBirth.contains("+") ||
-                        dateOfBirth.contains("=") || dateOfBirth.contains("'")|| dateOfBirth.contains(",")
-                        || city.contains("!") || city.contains("#") ||
-                        city.contains("+") ||
-                        city.contains("=") || city.contains("'")|| city.contains(",")
-                        || password1.contains("!") || password1.contains("#") ||
-                        password1.contains("+") ||
-                        password1.contains("=") || password1.contains("'")|| password1.contains(",")) {
-                    checking.setText("Нельзя использовать дополнительные символы");
-                }
                 else if (!password1.equals(password2)) {
                     checking.setText("Пароли не совпадают");
-                } else if (check == 0){
-
+                }
+                else if(!isOnline()){
+                    FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                    fragmentManager.beginTransaction().add(R.id.fl_reg, new NoInternetConnectionFragment()).commit();
+                }
+                else if(edTelOrEmail.getHint().toString().equals(getString(R.string.ed_email)) &&
+                        !edTelOrEmail.getText().toString().contains("@"))
+                    checking.setText("Введите корректный адрес электронной почты");
+                else if(edTelOrEmail.getHint().toString().equals(getString(R.string.ed_tel)) &&
+                        (edTelOrEmail.getText().toString()).matches(".*[a-zA-Z]+.*"))
+                    checking.setText("Введите корректный номер телефона");
+                else if (check == 0){
                     String encodedHash = null;
                     try {
                         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -152,7 +143,7 @@ public class RegFragment extends Fragment {
                         e.printStackTrace();
                     }
 
-                    openHelper.insert(new Person(data, name, age, null, dateOfBirth, city, encodedHash));
+                    openHelper.insert(new Person(data, name, age,IMAGE_URL, dateOfBirth, city, encodedHash));
 
                     new AppApiVolley(getContext()).addPerson
                             (openHelper.findPersonByLogin(name));
@@ -166,5 +157,15 @@ public class RegFragment extends Fragment {
                 }
             }
         });
+
+        return view;
+    }
+
+    public boolean isOnline(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo == null) return false;
+        else return networkInfo.isConnected();
     }
 }

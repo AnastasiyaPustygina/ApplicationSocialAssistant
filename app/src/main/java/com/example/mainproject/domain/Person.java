@@ -27,9 +27,7 @@ public class Person {
         else this.telephone = data;
         this.name = name;
         this.photoPer = photoPer;
-
         this.age = age;
-
         this.dateOfBirth = dateOfBirth;
         this.city = city;
         this.password = password;
@@ -60,6 +58,19 @@ public class Person {
         this.dateOfBirth = dateOfBirth;
         this.city = city;
         this.password = password;
+    }
+    public Person(int id, String data, String name, int age, String photoPer,
+                  String dateOfBirth, String city, String password, ArrayList<String> arr_fav_org) {
+        this.id = id;
+        if(data.contains("@")) this.email = data;
+        else this.telephone = data;
+        this.name = name;
+        this.photoPer = photoPer;
+        this.age = age;
+        this.dateOfBirth = dateOfBirth;
+        this.city = city;
+        this.password = password;
+        this.arr_fav_org = arr_fav_org;
     }
 
     public int getId() {
@@ -96,6 +107,7 @@ public class Person {
     public ArrayList<String> getArr_fav_org() {
         return arr_fav_org;
     }
+
     public void changeFavOrg(String nameOfOrg){
         if(arr_fav_org.contains(nameOfOrg)) arr_fav_org.remove(nameOfOrg);
         else arr_fav_org.add(nameOfOrg);
@@ -112,10 +124,10 @@ public class Person {
                 ", telephone='" + telephone + '\'' +
                 ", email='" + email + '\'' +
                 ", name='" + name + '\'' +
-                ", age=" + age +
+                ", photoPer='" + photoPer + '\'' +
                 ", dateOfBirth='" + dateOfBirth + '\'' +
                 ", city='" + city + '\'' +
-                ", password='" + password + '\'' +
+                ", age=" + age +
                 ", arr_fav_org=" + arr_fav_org +
                 '}';
     }

@@ -1,8 +1,11 @@
 package com.example.mainproject.fragment;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
@@ -16,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.mainproject.OpenHelper;
@@ -40,22 +44,21 @@ public class FullInfoFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.full_info_fragment, container, false);
-    }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        bt_prev = getActivity().findViewById(R.id.bt_fullInfo_arrowBack);
-        bt_help = getActivity().findViewById(R.id.bt_fullInfo_help);
-        photoOrg = getActivity().findViewById(R.id.iv_fullInfo_photoOrg);
-        name = getActivity().findViewById(R.id.tv_fullInfo_nameOrg);
-        type = getActivity().findViewById(R.id.tv_fullInfo_typeOrg);
-        desc = getActivity().findViewById(R.id.tv_fullInfo_descOrg);
-        address = getActivity().findViewById(R.id.tv_fullInfo_addressOrg);
-        needs = getActivity().findViewById(R.id.tv_fullInfo_needsOrg);
-        link = getActivity().findViewById(R.id.tv_fullInfo_linkToWeb);
-        OpenHelper openHelper = new OpenHelper(getContext(), "OpenHelder", null, OpenHelper.VERSION);
+        View view = inflater.inflate(R.layout.full_info_fragment, container, false);
+
+        bt_prev = view.findViewById(R.id.bt_fullInfo_arrowBack);
+        bt_help = view.findViewById(R.id.bt_fullInfo_help);
+        photoOrg = view.findViewById(R.id.iv_fullInfo_photoOrg);
+        name = view.findViewById(R.id.tv_fullInfo_nameOrg);
+        type = view.findViewById(R.id.tv_fullInfo_typeOrg);
+        desc = view.findViewById(R.id.tv_fullInfo_descOrg);
+        address = view.findViewById(R.id.tv_fullInfo_addressOrg);
+        needs = view.findViewById(R.id.tv_fullInfo_needsOrg);
+        link = view.findViewById(R.id.tv_fullInfo_linkToWeb);
+        TextView tv_prof = view.findViewById(R.id.tv_fullInfo_profile);
+
+        OpenHelper openHelper = new OpenHelper(getContext(), "OpenHelper", null, OpenHelper.VERSION);
         Organization organization = openHelper.findOrgByName(getArguments().getString("NameOrg"));
 
         try{
@@ -89,7 +92,6 @@ public class FullInfoFragment extends Fragment {
         int size80 = (int) (scale * (data / 20) + 0.5f);
         float sizeForTV15 = (float) data / 160;
 
-        TextView tv_prof = getActivity().findViewById(R.id.tv_fullInfo_profile);
         ViewGroup.MarginLayoutParams paramsProf = (ViewGroup.MarginLayoutParams) tv_prof.getLayoutParams();
         paramsProf.setMargins(0, size60, 0, size60);
         tv_prof.requestLayout();
@@ -125,24 +127,29 @@ public class FullInfoFragment extends Fragment {
         bt_help.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle bundle = new Bundle();
-                bundle.putString("LOG", getArguments().getString("LOG"));
-                bundle.putString("NameOrg", getArguments().getString("NameOrg"));
+                if (!isOnline()) {
+                    FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                    fragmentManager.beginTransaction().add(R.id.fl_fif, new NoInternetConnectionFragment()).commit();
+                } else {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("LOG", getArguments().getString("LOG"));
+                    bundle.putString("NameOrg", getArguments().getString("NameOrg"));
 
-                openHelper.insertChat(new Chat(
-                        openHelper.findPersonByLogin(getArguments().getString("LOG")),
-                        organization));
-                new AppApiVolley(getContext()).addChat(openHelper.findChatByPersonIdAndOrgId(
-                        openHelper.findPersonByLogin(getArguments().getString("LOG")).getId(),
-                        organization.getId()
-                ));
+                    openHelper.insertChat(new Chat(
+                            openHelper.findPersonByLogin(getArguments().getString("LOG")),
+                            organization));
+                    new AppApiVolley(getContext()).addChat(openHelper.findChatByPersonIdAndOrgId(
+                            openHelper.findPersonByLogin(getArguments().getString("LOG")).getId(),
+                            organization.getId()
+                    ));
 
-                bt_help.setOnClickListener((view1) -> {
-                    NavHostFragment.
-                            findNavController(FullInfoFragment.this).navigate(
-                            R.id.action_fullInfoFragment_to_chatFragment, bundle);
-                });
-                bt_help.performClick();
+                    bt_help.setOnClickListener((view1) -> {
+                        NavHostFragment.
+                                findNavController(FullInfoFragment.this).navigate(
+                                R.id.action_fullInfoFragment_to_chatFragment, bundle);
+                    });
+                    bt_help.performClick();
+                }
             }
         });
         bt_prev.setOnClickListener(new View.OnClickListener() {
@@ -198,9 +205,19 @@ public class FullInfoFragment extends Fragment {
                 }
             }
         });
+
+        return view;
     }
+
     private String getColoredSpanned(String text, String color) {
         String input = "<font color=" + color + ">" + text + "</font>";
         return input;
+    }
+    public boolean isOnline(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo == null) return false;
+        else return networkInfo.isConnected();
     }
 }

@@ -2,19 +2,26 @@ package com.example.mainproject.adapter;
 
 import android.content.Context;
 import android.database.CursorIndexOutOfBoundsException;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +33,7 @@ import com.example.mainproject.fragment.MapFragment;
 import com.example.mainproject.domain.Chat;
 import com.example.mainproject.domain.Organization;
 import com.example.mainproject.domain.Person;
+import com.example.mainproject.fragment.NoInternetConnectionFragment;
 import com.example.mainproject.rest.AppApiVolley;
 import com.squareup.picasso.Picasso;
 
@@ -36,7 +44,7 @@ public class OrgArrayAdapter extends RecyclerView.Adapter<OrgArrayAdapter.ViewHo
     private Context context;
     private LayoutInflater inflater;
     private List<Organization> arrayOrg;
-
+    private FrameLayout layout;
     private String nameOfPerson;
     private Fragment fragment;
 
@@ -59,12 +67,15 @@ public class OrgArrayAdapter extends RecyclerView.Adapter<OrgArrayAdapter.ViewHo
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-
+        layout = fragment.getClass() == ListFragment.class ?
+                fragment.getActivity().findViewById(R.id.fl_list) :
+                fragment.getActivity().findViewById(R.id.fl_fav);
         Organization organization = arrayOrg.get(position);
-        OpenHelper openHelper1 = new OpenHelper(context, "OpenHelder", null, OpenHelper.VERSION);
-        Person person = openHelper1.findPersonByLogin(nameOfPerson);
+        OpenHelper openHelper = new OpenHelper(context, "OpenHelper",
+                null, OpenHelper.VERSION);
+        Person person = openHelper.findPersonByLogin(nameOfPerson);
         try {
-            if (openHelper1.findFavOrgByLogin(nameOfPerson).contains(organization.getName()))
+            if (person.getArr_fav_org().contains(organization.getName()))
                 holder.btIdenFav.setBackgroundResource(R.drawable.bt_fav_true);
             else holder.btIdenFav.setBackgroundResource(R.drawable.bt_fav_false);
         }catch (Exception e){
@@ -79,7 +90,6 @@ public class OrgArrayAdapter extends RecyclerView.Adapter<OrgArrayAdapter.ViewHo
         holder.ph.setImageDrawable(context.getResources().getDrawable(R.drawable.ava_for_project));
         try{
             if(organization.getPhotoOrg() != null && !organization.getPhotoOrg().equals("null")) {
-                Log.e("notNullPhoto", organization.getPhotoOrg());
                 Picasso.get().load(organization.getPhotoOrg()).into(holder.ph);
             }
         }catch (Exception e){
@@ -88,11 +98,22 @@ public class OrgArrayAdapter extends RecyclerView.Adapter<OrgArrayAdapter.ViewHo
         holder.btIdenFav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                person.changeFavOrg(organization.getName());
-                if(!openHelper1.findFavOrgByLogin(nameOfPerson).contains(organization.getName()))
-                    holder.btIdenFav.setBackgroundResource(R.drawable.bt_fav_true);
-                else holder.btIdenFav.setBackgroundResource(R.drawable.bt_fav_false);
-                openHelper1.changeFavOrg(nameOfPerson, organization.getName());
+                if(!isOnline()){
+                    FragmentManager fragmentManager = fragment.getActivity().getSupportFragmentManager();
+                    fragmentManager.beginTransaction().add(layout.getId(), new NoInternetConnectionFragment()).commit();
+                }
+                else {
+                    Person person = openHelper.findPersonByLogin(nameOfPerson);
+                    person.changeFavOrg(organization.getName());
+                    openHelper.changeFavOrg(nameOfPerson, person.getArr_fav_org());
+                    if (openHelper.findFavOrgByLogin(nameOfPerson).contains(organization.getName()))
+                        holder.btIdenFav.setBackgroundResource(R.drawable.bt_fav_true);
+                    else holder.btIdenFav.setBackgroundResource(R.drawable.bt_fav_false);
+                    new AppApiVolley(context).updatePerson(person.getId(), person.getTelephone(), person.getEmail(), person.getName(),
+                            openHelper.findPersonByLogin(person.getName()).getPhotoPer(),
+                            person.getAge(), person.getDateOfBirth() ,person.getCity(), person.getPassword(),
+                            openHelper.findFavOrgByLogin(person.getName()));
+                }
             }
         });
         holder.fullInfo.setOnClickListener(new View.OnClickListener() {
@@ -131,40 +152,44 @@ public class OrgArrayAdapter extends RecyclerView.Adapter<OrgArrayAdapter.ViewHo
         holder.btHelp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Chat chat = new Chat(
-                        person, organization);
-                try{
-                    if (openHelper1.findChatIdByOrgIdAndPerId(
-                            organization.getId(), person.getId()) == -100) {
-                        Log.e("ooabh", openHelper1.findAllChats().toString());
-
-                        chat = new Chat(
-                                openHelper1.findPersonByLogin(nameOfPerson), organization);
-                        openHelper1.insertChat(chat);
-                        new AppApiVolley(context).addChat(openHelper1.findChatByPersonIdAndOrgId(
-                                openHelper1.findPersonByLogin(nameOfPerson).getId(), organization.getId()));
-                    }
-                }catch (CursorIndexOutOfBoundsException e){
-                    new AppApiVolley(context).addChat(chat);
-                }
-                Bundle bundleNameOfOrg = new Bundle();
-                bundleNameOfOrg.putString("NameOrg", holder.nameOrg.getText().toString());
-                bundleNameOfOrg.putString("LOG", nameOfPerson);
-                if(fragment.getClass().equals(ListFragment.class)) {
-                    holder.btHelp.setOnClickListener((view1) -> {
-                        NavHostFragment.
-                                findNavController(fragment).navigate(
-                                R.id.action_listFragment_to_chatFragment, bundleNameOfOrg);
-                    });
+                if(!isOnline()){
+                    FragmentManager fragmentManager = fragment.getActivity().getSupportFragmentManager();
+                    fragmentManager.beginTransaction().add(layout.getId(), new NoInternetConnectionFragment()).commit();
                 }
                 else {
-                    holder.btHelp.setOnClickListener((view1) -> {
-                        NavHostFragment.
-                                findNavController(fragment).navigate(
-                                R.id.action_favouritesFragment_to_chatFragment, bundleNameOfOrg);
-                    });
+                    Chat chat = new Chat(
+                            person, organization);
+                    try {
+                        if (openHelper.findChatIdByOrgIdAndPerId(
+                                organization.getId(), person.getId()) == -100) {
+
+                            chat = new Chat(
+                                    openHelper.findPersonByLogin(nameOfPerson), organization);
+                            openHelper.insertChat(chat);
+                            new AppApiVolley(context).addChat(openHelper.findChatByPersonIdAndOrgId(
+                                    openHelper.findPersonByLogin(nameOfPerson).getId(), organization.getId()));
+                        }
+                    } catch (CursorIndexOutOfBoundsException e) {
+                        new AppApiVolley(context).addChat(chat);
+                    }
+                    Bundle bundleNameOfOrg = new Bundle();
+                    bundleNameOfOrg.putString("NameOrg", holder.nameOrg.getText().toString());
+                    bundleNameOfOrg.putString("LOG", nameOfPerson);
+                    if (fragment.getClass().equals(ListFragment.class)) {
+                        holder.btHelp.setOnClickListener((view1) -> {
+                            NavHostFragment.
+                                    findNavController(fragment).navigate(
+                                    R.id.action_listFragment_to_chatFragment, bundleNameOfOrg);
+                        });
+                    } else {
+                        holder.btHelp.setOnClickListener((view1) -> {
+                            NavHostFragment.
+                                    findNavController(fragment).navigate(
+                                    R.id.action_favouritesFragment_to_chatFragment, bundleNameOfOrg);
+                        });
+                    }
+                    holder.btHelp.performClick();
                 }
-                holder.btHelp.performClick();
             }
         });
     }
@@ -193,6 +218,13 @@ public class OrgArrayAdapter extends RecyclerView.Adapter<OrgArrayAdapter.ViewHo
             fullInfo = itemView.findViewById(R.id.bt_shDes_fullInfo);
 
         }
+    }
+    public boolean isOnline(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) fragment.getActivity().
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo == null) return false;
+        else return networkInfo.isConnected();
     }
 
 }

@@ -19,6 +19,10 @@ import com.example.mainproject.domain.Message;
 import com.example.mainproject.domain.Organization;
 import com.example.mainproject.domain.Person;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 
 import java.io.IOException;
@@ -145,6 +149,12 @@ public class OpenHelper extends SQLiteOpenHelper {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("per_id", idPer + 1);
         editor.commit();
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("fav_org", new JSONArray(person.getArr_fav_org()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         ContentValues contentValues = new ContentValues();
         contentValues.put(COLUMN_PERSON_ID, idPer);
         contentValues.put(COLUMN_NAME, person.getName());
@@ -156,7 +166,7 @@ public class OpenHelper extends SQLiteOpenHelper {
         contentValues.put(COLUMN_DATE_OF_BIRTH, person.getDateOfBirth());
         contentValues.put(COLUMN_PASSWORD, person.getPassword());
         contentValues.put(COLUMN_AGE, person.getAge());
-        contentValues.put(COLUMN_FAV_ORG, "");
+        contentValues.put(COLUMN_FAV_ORG, jsonObject.toString());
         SQLiteDatabase db = getWritableDatabase();
         return db.insert(TABLE_PERSON_NAME, null, contentValues);
     }
@@ -274,20 +284,31 @@ public class OpenHelper extends SQLiteOpenHelper {
         }while (cursor.moveToNext());
         return new Chat(null, null);
     }
-    public String findFavOrgByLogin(String log){
+    public ArrayList<String> findFavOrgByLogin(String log){
         SQLiteDatabase db = getReadableDatabase();
         try {
             Cursor cursor = db.rawQuery("SELECT " + COLUMN_FAV_ORG +
                     " FROM " + TABLE_PERSON_NAME +
                     " WHERE " + COLUMN_NAME + " = ?", new String[]{log});
             cursor.moveToFirst();
-            return cursor.getString((cursor.getColumnIndexOrThrow(COLUMN_FAV_ORG)));
+            String fav =  cursor.getString((cursor.getColumnIndexOrThrow(COLUMN_FAV_ORG)));
+            ArrayList<String> favOrgArray = new ArrayList<>();
+            JSONArray favOrgJsonArray = new JSONArray();
+            try {
+                JSONObject object = new JSONObject(fav);
+                favOrgJsonArray = object.optJSONArray("fav_org");
+                for (int i = 0; i < favOrgJsonArray.length(); i++) {
+                    favOrgArray.add(favOrgJsonArray.getString(i));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return favOrgArray;
         } catch (CursorIndexOutOfBoundsException e) {
-            return " ";
+            return new ArrayList<>();
         }
     }
     public void changeDescByLog(String name, String description){
-        SQLiteDatabase db = getReadableDatabase();
         SQLiteDatabase sqLiteDatabase = getWritableDatabase();
         sqLiteDatabase.execSQL("UPDATE " + TABLE_ORG_NAME + " SET " +
                 COLUMN_DESCRIPTION + " = '" + description + "' WHERE " + COLUMN_ORGNAME
@@ -314,42 +335,18 @@ public class OpenHelper extends SQLiteOpenHelper {
                 + " = '" + login + "'");
     }
 
-    public void changeFavOrg(String log, String nameOfOrg){
+    public void changeFavOrg(String log, ArrayList<String> arrayListFavOrg){
         SQLiteDatabase db = getWritableDatabase();
-        String fav = "";
-        String requiredData = "";
-        Cursor cur = db.query(TABLE_PERSON_NAME, null, null,
-                null, null, null, null);
-        cur.moveToFirst();
-        if (!cur.isAfterLast()) {
-            do {
-                fav = cur.getString(cur.getColumnIndexOrThrow(COLUMN_FAV_ORG));
-                String name = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME));
-                if (name.equals(log)) requiredData = fav;
-            } while (cur.moveToNext());
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("fav_org", new JSONArray(arrayListFavOrg));
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-        List<String> ar = Arrays.asList(findFavOrgByLogin(log).split("    "));
-        if(!ar.contains(nameOfOrg)) {
-            String res = requiredData + "    " + nameOfOrg;
-            String query = "UPDATE " + TABLE_PERSON_NAME + " SET " +
-                    COLUMN_FAV_ORG + " = " + "'" + res + "'" + " WHERE "
+        String query = "UPDATE " + TABLE_PERSON_NAME + " SET " +
+                    COLUMN_FAV_ORG + " = " + "'" + jsonObject.toString() + "'" + " WHERE "
                     + COLUMN_NAME + " = '" + log + "';";
             db.execSQL(query);
-        }
-        else{
-            String[] str = findFavOrgByLogin(log).split("    ");
-            for (int i = 0; i < str.length; i++) {
-                if(str[i].equals(nameOfOrg)) str[i] = "";
-            }
-            StringBuilder res = new StringBuilder();
-            for (int i = 0; i < str.length; i++) {
-                res.append(str[i] + "    ");
-            }
-            String query = "UPDATE " + TABLE_PERSON_NAME + " SET " +
-                    COLUMN_FAV_ORG + " = " + "'" + res + "'" + " WHERE "
-                    + COLUMN_NAME + " = '" + log + "';";
-            db.execSQL(query);
-        }
     }
 
 
@@ -369,9 +366,19 @@ public class OpenHelper extends SQLiteOpenHelper {
                 String dateOfBirth = cur.getString(cur.getColumnIndexOrThrow(COLUMN_DATE_OF_BIRTH));
                 String city = cur.getString(cur.getColumnIndexOrThrow(COLUMN_CITY));
                 String name = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME));
+                String  favOrg = cur.getString(cur.getColumnIndexOrThrow(COLUMN_FAV_ORG));
+                ArrayList<String> arrayList = new ArrayList<>();
+                try {
+                    JSONArray jsonArray = new JSONObject(favOrg).optJSONArray("fav_org");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        arrayList.add(jsonArray.optString(i));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 if(name.equals(log)) {
                     String data = telephone == null ? email : telephone;
-                    return new Person(id, data, name, age, photo, dateOfBirth, city, pass);
+                    return new Person(id, data, name, age, photo, dateOfBirth, city, pass, arrayList);
                 }
             }while (cur.moveToNext());
         }
@@ -393,9 +400,20 @@ public class OpenHelper extends SQLiteOpenHelper {
                 String photo = cur.getString(cur.getColumnIndexOrThrow(COLUMN_PERSON_PHOTO));
                 String city = cur.getString(cur.getColumnIndexOrThrow(COLUMN_CITY));
                 String name = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME));
+                String  favOrg = cur.getString(cur.getColumnIndexOrThrow(COLUMN_FAV_ORG));
+                ArrayList<String> arrayList = new ArrayList<>();
+                try {
+                    JSONArray jsonArray = new JSONObject(favOrg).optJSONArray("fav_org");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        arrayList.add(jsonArray.optString(i));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
                 if(id == idPer) {
                     String data = telephone == null ? email : telephone;
-                    return new Person(id, data, name, age, photo, dateOfBirth, city, pass);
+                    return new Person(id, data, name, age, photo, dateOfBirth, city, pass, arrayList);
                 }
             }while (cur.moveToNext());
         }

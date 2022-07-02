@@ -7,6 +7,7 @@
     <color name="teal_500">#6AAFBA</color>
     <color name="teal_400">#7CB2BC</color>
     <color name="for_first_ava">#535455</color>
+    <color name="background">#4D000000</color>
     <color name="teal_700">#C9E0E4</color>
     <color name="red">#A30B0B</color>
     <color name="voidColor">#007CB2BC</color>

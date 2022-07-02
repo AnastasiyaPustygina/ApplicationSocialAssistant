@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fl_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
@@ -20,17 +21,34 @@
             android:layout_height="wrap_content"
             android:background="@color/white1"
             android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="30dp"
                 android:layout_marginTop="50dp"
                 android:layout_marginBottom="40dp"
-                android:text="Профиль"
-                android:textColor="@color/purple_700"
-                android:textSize="25dp"
-                android:textStyle="bold" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Профиль"
+                    android:textColor="@color/purple_700"
+                    android:textSize="25dp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            <ImageView
+                android:id="@+id/iv_logout"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:src="@drawable/logout"
+                android:layout_marginEnd="30dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_percent="1"
+                app:layout_constraintWidth_percent="0.10" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -38,7 +56,7 @@
                 android:layout_margin="20dp"
                 android:orientation="horizontal">
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1">
 
@@ -66,8 +84,8 @@
                         app:layout_constraintWidth_percent="0.25" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
                 <LinearLayout
-                    android:layout_weight="2"
-                    android:layout_width="wrap_content"
+                    android:layout_weight="3"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 

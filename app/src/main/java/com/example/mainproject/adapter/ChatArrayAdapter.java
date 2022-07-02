@@ -29,7 +29,7 @@ public class ChatArrayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         this.context = context;
         this.inflater = LayoutInflater.from(context);
         this.fragment = fragment;
-        OpenHelper openHelper = new OpenHelper(context, "OpenHelder", null, OpenHelper.VERSION);
+        OpenHelper openHelper = new OpenHelper(context, "OpenHelper", null, OpenHelper.VERSION);
         allMsg = openHelper.findMsgByChatId(chatId);
     }
 

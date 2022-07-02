@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
+    android:id="@+id/fl_reg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android">
@@ -117,14 +118,15 @@
             android:background="@drawable/for_ed_text"
             android:textColorHint="@color/for_hint"
             android:hint="@string/ed_age" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/black"
             android:layout_marginStart="30dp"
             android:layout_marginTop="20dp"
-            android:textSize="15dp"
-            android:text="Дата рождения"/>
+            android:text="Дата рождения"
+            android:textColor="@color/black"
+            android:textSize="15dp" />
         <EditText
             android:id="@+id/ed_reg_dateOfBirth"
             android:inputType="number"
@@ -136,7 +138,7 @@
             android:layout_marginLeft="30dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="30dp"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:background="@drawable/for_ed_text"
             android:textColorHint="@color/for_hint"
             android:hint="@string/ed_date_of_birth" />
